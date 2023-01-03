@@ -1,8 +1,8 @@
 use std::clone::Clone;
-#[derive(Copy)]
-pub struct Node<T: Clone  > {
-    pub value: Option<T>,
-    pub next: *mut Node<T>,
+
+pub struct Node<T: Clone> {
+    pub value: T,
+    pub next: Option<Box<Node<T>>>,
 }
 
 impl<T: Clone> Clone for Node<T> {
@@ -14,6 +14,11 @@ impl<T: Clone> Clone for Node<T> {
     }
 }
 
+impl<T: Clone> AsMut<Node<T>> for Node<T> {
+    fn as_mut(&mut self) -> &mut Node<T> {
+        self
+    }
+}
 impl<T: Clone> AsRef<Node<T>> for Node<T> {
     fn as_ref(&self) -> &Node<T> {
         self
@@ -21,29 +26,29 @@ impl<T: Clone> AsRef<Node<T>> for Node<T> {
 }
 
 impl<T: Clone> Node<T> {
-    pub fn new(value: Option<T>) -> Node<T> {
-        Node { value, next: std::ptr::null_mut() }
+    pub fn new(value: T) -> Node<T> {
+        Node { value, next: Option::None }
     }
     
-    pub fn new_with_next(value: Option<T>, next: *mut Node<T>) -> Node<T> {
-        Node { value, next }
+    pub fn new_with_next(value: T, next: Node<T>) -> Node<T> {
+        Node { value,  next: Option::Some(Box::from(next))}
     }
 
     pub fn get(&self) -> &T {
-        self.value.as_ref().unwrap()
+        &self.value
     }
 
-    pub fn set(&mut self, value: T) {
-        self.value = Some(value);
+    pub fn set(&mut self, value: T) -> &T{
+        self.value = value;
+        &self.value
     }
 
-    pub fn set_next(&mut self, next: *mut Node<T>) -> &Node<T> {
-        self.next = next;
-        self.next.as_ref()
+    pub fn set_next(&mut self, next: Node<T>) -> &Node<T> {
+        self.next = Option::Some(Box::new(next));
+        &self.next.unwrap()
     }
 
-    pub fn get_next(&self) -> &Node<T> {
-        let node = *self.next;
-        &node
+    pub fn get_next(&self) -> &Option<Box<Node<T>>> {
+        &self.next
     }
 }
